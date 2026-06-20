@@ -1,0 +1,12 @@
+Model: Logistic Regression V2
+
+Accuracy : 0.7996
+Precision: 0.6411
+Recall   : 0.5588
+F1 Score : 0.5971
+ROC AUC  : 0.8377
+
+Notes:
+- StandardScaler applied
+- max_iter=5000
+- random_state=42
