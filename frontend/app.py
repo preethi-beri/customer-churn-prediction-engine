@@ -2,6 +2,37 @@ import pandas as pd
 import os
 import streamlit as st
 import requests
+from datetime import datetime
+
+# ==========================
+# Paths
+# ==========================
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    )
+)
+
+prediction_dir = os.path.join(
+    BASE_DIR,
+    "data",
+    "predictions"
+)
+
+os.makedirs(
+    prediction_dir,
+    exist_ok=True
+)
+
+history_file = os.path.join(
+    prediction_dir,
+    "prediction_history.csv"
+)
+
+# ==========================
+# Streamlit Config
+# ==========================
 
 st.set_page_config(
     page_title="Customer Churn Prediction Engine",
@@ -67,7 +98,7 @@ with col2:
     )
 
 # ==========================
-# Prediction Button
+# Predict Button
 # ==========================
 
 if st.button("🚀 Predict Churn Risk"):
@@ -140,47 +171,37 @@ if st.button("🚀 Predict Churn Risk"):
 
         response = requests.post(
             "https://customer-churn-api-cjiy.onrender.com/predict",
-            json=payload
+            json=payload,
+            timeout=30
         )
 
         result = response.json()
 
-        # ==========================
-        # Save Prediction History
-        # ==========================
-
-        BASE_DIR = os.path.dirname(
-            os.path.dirname(
-                os.path.abspath(__file__)
-            )
-        )
-
-        prediction_dir = os.path.join(
-            BASE_DIR,
-            "data",
-            "predictions"
-        )
-
-        if not os.path.isdir(prediction_dir):
-            os.makedirs(
-                prediction_dir,
-                exist_ok=True
-            )
-
-        history_file = os.path.join(
-            prediction_dir,
-            "prediction_history.csv"
-        )
-
         history = {
+
+            "timestamp":
+                datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+
             "tenure": tenure,
-            "monthly_charges": monthly_charges,
-            "total_charges": total_charges,
-            "churn_probability": result["churn_probability"],
-            "prediction": result["prediction"]
+
+            "monthly_charges":
+                monthly_charges,
+
+            "total_charges":
+                total_charges,
+
+            "churn_probability":
+                result["churn_probability"],
+
+            "prediction":
+                result["prediction"]
         }
 
-        history_df = pd.DataFrame([history])
+        history_df = pd.DataFrame(
+            [history]
+        )
 
         if os.path.exists(history_file):
 
@@ -204,11 +225,9 @@ if st.button("🚀 Predict Churn Risk"):
 
         st.divider()
 
-        # ==========================
-        # Risk Score
-        # ==========================
-
-        st.subheader("📈 Churn Risk Score")
+        st.subheader(
+            "📈 Churn Risk Score"
+        )
 
         st.metric(
             "Churn Probability",
@@ -219,37 +238,48 @@ if st.button("🚀 Predict Churn Risk"):
             int(probability)
         )
 
-        # ==========================
-        # Risk Level
-        # ==========================
-
-        st.subheader("⚠️ Risk Level")
+        st.subheader(
+            "⚠️ Risk Level"
+        )
 
         if probability >= 70:
-            st.error(result["prediction"])
+
+            st.error(
+                result["prediction"]
+            )
 
         elif probability >= 40:
-            st.warning(result["prediction"])
+
+            st.warning(
+                result["prediction"]
+            )
 
         else:
-            st.success(result["prediction"])
 
-        # ==========================
-        # Top Risk Factors
-        # ==========================
+            st.success(
+                result["prediction"]
+            )
 
-        st.subheader("🔥 Top Risk Factors")
+        st.subheader(
+            "🔥 Top Risk Factors"
+        )
 
-        for factor in result["top_risk_factors"]:
-            st.write(f"• {factor}")
+        for factor in result[
+            "top_risk_factors"
+        ]:
 
-        # ==========================
-        # Recommendations
-        # ==========================
+            st.write(
+                f"• {factor}"
+            )
 
-        st.subheader("💡 Recommendations")
+        st.subheader(
+            "💡 Recommendations"
+        )
 
-        for rec in result["recommendations"]:
+        for rec in result[
+            "recommendations"
+        ]:
+
             st.success(rec)
 
     except Exception as e:
@@ -258,18 +288,14 @@ if st.button("🚀 Predict Churn Risk"):
             f"Error: {str(e)}"
         )
 
-        # ==========================
+# ==========================
 # Prediction History
 # ==========================
 
 st.divider()
 
-st.subheader("📜 Prediction History")
-
-history_file = os.path.join(
-    "data",
-    "predictions",
-    "prediction_history.csv"
+st.subheader(
+    "📜 Prediction History"
 )
 
 if os.path.exists(history_file):
@@ -279,12 +305,186 @@ if os.path.exists(history_file):
     )
 
     st.dataframe(
-        history_df.tail(10),
+        history_df,
         use_container_width=True
     )
+
+    # ==========================
+    # Dashboard Metrics
+    # ==========================
+
+    st.subheader(
+        "📊 Dashboard Metrics"
+    )
+
+    avg_churn = (
+        history_df[
+            "churn_probability"
+        ].mean() * 100
+    )
+
+    total_predictions = len(
+        history_df
+    )
+
+    high_risk_count = len(
+        history_df[
+            history_df[
+                "prediction"
+            ] == "High Risk"
+        ]
+    )
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Total Predictions",
+            total_predictions
+        )
+
+    with col2:
+
+        st.metric(
+            "High Risk Customers",
+            high_risk_count
+        )
+
+    with col3:
+
+        st.metric(
+            "Average Churn %",
+            f"{avg_churn:.2f}%"
+        )
+
+    # ==========================
+    # Risk Distribution
+    # ==========================
+
+    st.subheader(
+        "📊 Risk Distribution"
+    )
+
+    risk_counts = (
+        history_df[
+            "prediction"
+        ].value_counts()
+    )
+
+    st.bar_chart(
+        risk_counts
+    )
+
+    # ==========================
+    # Churn Trend
+    # ==========================
+
+    st.subheader(
+        "📈 Churn Probability Trend"
+    )
+
+    chart_df = history_df.copy()
+
+    chart_df[
+        "Prediction No"
+    ] = range(
+        1,
+        len(chart_df) + 1
+    )
+
+    chart_df[
+        "churn_probability"
+    ] = (
+        chart_df[
+            "churn_probability"
+        ] * 100
+    )
+
+    chart_df = chart_df.set_index(
+        "Prediction No"
+    )
+
+    st.line_chart(
+        chart_df[
+            "churn_probability"
+        ]
+    )
+
+    # ==========================
+    # Recent Predictions
+    # ==========================
+
+    st.subheader(
+        "🕒 Recent Predictions"
+    )
+
+    st.dataframe(
+        history_df.tail(5),
+        use_container_width=True
+    )
+
+    # ==========================
+    # Download CSV
+    # ==========================
+
+    with open(
+        history_file,
+        "rb"
+    ) as f:
+
+        st.download_button(
+            label=
+            "⬇ Download Prediction History",
+            data=f,
+            file_name=
+            "prediction_history.csv",
+            mime="text/csv"
+        )
+
+    # ==========================
+    # Clear History
+    # ==========================
+
+    if st.button(
+        "🗑 Clear History"
+    ):
+
+        os.remove(
+            history_file
+        )
+
+        st.success(
+            "Prediction history cleared!"
+        )
+
+        st.rerun()
 
 else:
 
     st.info(
         "No prediction history available yet."
     )
+
+# ==========================
+# Footer
+# ==========================
+
+st.divider()
+
+st.markdown(
+    """
+    ### 🚀 Built By Preethi Beri
+
+    **Technologies Used**
+
+    - Python
+    - Pandas
+    - Scikit-Learn
+    - FastAPI
+    - Streamlit
+    - Render Cloud
+
+    **Customer Churn Prediction & Retention Recommendation Engine**
+    """
+)
