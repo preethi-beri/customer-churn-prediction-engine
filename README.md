@@ -52,16 +52,15 @@ This project uses Machine Learning to identify customers who are likely to churn
 
 ### Dashboard Overview
 
-![Dashboard](screenshots/dashboard.png)
+<img src="screenshots/dashboard.png" width="900">
 
 ### Prediction Results
 
-![Prediction](screenshots/predictions.png)
+<img src="screenshots/predictions.png" width="900">
 
 ### Analytics Dashboard
 
-![Analytics](screenshots/analytics.png)
-
+<img src="screenshots/analytics.png" width="900">
 ---
 
 ## 📈 Project Highlights
