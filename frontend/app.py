@@ -139,7 +139,7 @@ if st.button("🚀 Predict Churn Risk"):
     try:
 
         response = requests.post(
-            "http://127.0.0.1:8000/predict",
+            "https://customer-churn-api-cjiy.onrender.com/predict",
             json=payload
         )
 
