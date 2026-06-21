@@ -2,7 +2,7 @@
 
 > End-to-End Machine Learning Solution for Customer Churn Prediction, Retention Recommendations, Explainable Insights, and Analytics Dashboard
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange)
